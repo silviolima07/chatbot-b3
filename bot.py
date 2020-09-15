@@ -19,7 +19,7 @@ server = Flask(__name__)
 
 # Install yfinance package. 
 #!pip install yfinance
-# Import yfinance 
+
 import yfinance as yf
 #
 # Get values for
@@ -28,7 +28,6 @@ stocks = ['PETR4.SA', 'TAEE4.SA', 'ITSA4.SA']
 
 # Download data
 
-df = []
 data = {}
 for i in range(len(stocks)):
     temp = yf.download(stocks[i], '2020-01-01', today)
@@ -41,9 +40,7 @@ for i in range(len(stocks)):
     if stocks[i] == 'ITSA4.SA':
         df_itsa4 = temp[['Open','Close']]
 
-
-    df.append(temp.Close)
-    data.update({stocks[i]:df[i]})
+    data.update({stocks[i]:temp.Close})
 
 df = pd.DataFrame(data, columns=stocks)
 #
@@ -67,7 +64,7 @@ df_itsa4[['Open','Close']].plot(grid=True, title='Cotação da ITSA4 em 2020\nPe
 #
 plt.savefig('itsa4.png')
 
-#####################################################
+##################### Função Forecast ################################
 
 # Forecast by Prophet
 
@@ -96,7 +93,7 @@ def predict_stock(model,df,prediction_size, stock):
     fig = model.plot_components(forecast, figsize=(10,5))
     fig.savefig('components-'+stock+'.png')
 
-
+##################### Previsões ################################
 
 # PETR4
 model1 = Prophet(interval_width=0.95)
@@ -112,94 +109,93 @@ predict_stock(model2,df,prediction_size,'TAEE4')
 model3 = Prophet(interval_width=0.95)
 df = stock(df_itsa4)
 predict_stock(model3,df,prediction_size,'ITSA4')
+ 
+##################### Mensagens ################################
 
-
-@bot.message_handler(commands=['start']) # welcome message handler
-def send_welcome(message):
-    photo0 = open('bot-b3.png', 'rb')
-    bot.send_photo(message.chat.id, photo0)
-    texto = 'BEM VINDO\nPara Cotação -> /cotacao\nPara Forecast -> /forecast'
+@bot.message_handler(commands=['start']) # welcome message
+def send_welcome(message):               # handler
+    photo = open('bot-b3.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+    texto = 'BEM VINDO\nEste bot traz a cotação de: 
+    \nPETR4, TAEE4 e ITSA4.\nPeriodo: desde janeiro de 2020 
+    até a data atual.\nTraz também a previsão de fechamento 
+    nos próximos 30 dias.\nVeja: /menu'
     bot.reply_to(message, texto)
-    #photo0 = open('bot-b3.png', 'rb')
-    #bot.send_photo(message.chat.id, photo0)
 
-@bot.message_handler(commands=['bot']) # welcome message handler
-def send_welcome(message):
-    #bot.reply_to(message, 'Seja esperto como uma Águia')   
-    photo1 = open('bot-b3.png', 'rb')
-    bot.send_photo(message.chat.id, photo1)
-
-@bot.message_handler(commands=['all']) # welcome message handler
-def send_welcome(message):   
-    photo2 = open('all.png', 'rb')
-    bot.send_photo(message.chat.id, photo2)
-
-
-@bot.message_handler(commands=['petr4']) # welcome message handler
-def send_welcome(message):   
-    photo3 = open('petr4.png', 'rb')
-    bot.send_photo(message.chat.id, photo3)
-
-
-@bot.message_handler(commands=['taee4']) # welcome message handler
-def send_welcome(message):
-    #bot.reply_to(message, 'Enviando uma image do grafico')   
-    photo4 = open('taee4.png', 'rb')
-    bot.send_photo(message.chat.id, photo4)
-
-
-@bot.message_handler(commands=['itsa4']) # welcome message handler
-def send_welcome(message):
-    #bot.reply_to(message, 'Enviando uma image do grafico')   
-    photo5 = open('itsa4.png', 'rb')
-    bot.send_photo(message.chat.id, photo5)
-
-@bot.message_handler(commands=['cotacao']) # welcome message handler
+@bot.message_handler(commands=['bot']) # bot-b3
 def send_welcome(message):  
-    photo6 = open('cotacao.png', 'rb')
-    bot.send_photo(message.chat.id, photo6)
+    photo = open('bot-b3.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
 
-@bot.message_handler(commands=['forecast']) # welcome message handler
+@bot.message_handler(commands=['menu']) # Menu
 def send_welcome(message):   
-    photo7 = open('forecast.png', 'rb')
-    bot.send_photo(message.chat.id, photo7)
+    photo = open('menu.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+    texto = 'PETR4 -> /petr4    /fore_petr4\nTAEE4 -> /taee4 
+    /fore_taee4\nITSA4 -> /itsa4     /fore_itsa4\nAll -> /all'
+    bot.reply_to(message, texto)
 
-#####################################################
+##################### Cotação ################################
 
-@bot.message_handler(commands=['fore_petr4']) # welcome message handler
-def send_welcome(message):
-    #bot.reply_to(message, 'Enviando uma image do grafico')   
-    photo6 = open('prophet-PETR4.png', 'rb')
-    bot.send_photo(message.chat.id, photo6)
-    photo61 = open('components-PETR4.png', 'rb')
-    bot.send_photo(message.chat.id, photo61)
+@bot.message_handler(commands=['all']) # todas ações
+def send_welcome(message):   
+    photo = open('all.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
 
-@bot.message_handler(commands=['fore_taee4']) # welcome message handler
-def send_welcome(message):
-    #bot.reply_to(message, 'Enviando uma image do grafico')   
-    photo6 = open('prophet-TAEE4.png', 'rb')
-    bot.send_photo(message.chat.id, photo6)
-    photo61 = open('components-TAEE4.png', 'rb')
-    bot.send_photo(message.chat.id, photo61)
 
-@bot.message_handler(commands=['fore_itsa4']) # welcome message handler
-def send_welcome(message):
-    #bot.reply_to(message, 'Enviando uma image do grafico')   
-    photo6 = open('prophet-ITSA4.png', 'rb')
-    bot.send_photo(message.chat.id, photo6)
-    photo61 = open('components-ITSA4.png', 'rb')
-    bot.send_photo(message.chat.id, photo61)
+@bot.message_handler(commands=['petr4']) # PETR4
+def send_welcome(message):   
+    photo = open('petr4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+
+
+@bot.message_handler(commands=['taee4']) # TAEE4
+def send_welcome(message):  
+    photo = open('taee4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+
+
+@bot.message_handler(commands=['itsa4']) # ITSA4
+def send_welcome(message):  
+    photo = open('itsa4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+
+
+##################### Forecast ################################
+
+@bot.message_handler(commands=['fore_petr4'])
+def send_welcome(message):  
+    photo = open('prophet-PETR4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+    photo = open('components-PETR4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+
+@bot.message_handler(commands=['fore_taee4'])
+def send_welcome(message):   
+    photo = open('prophet-TAEE4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+    photo = open('components-TAEE4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+
+@bot.message_handler(commands=['fore_itsa4'])
+def send_welcome(message):  
+    photo = open('prophet-ITSA4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+    photo = open('components-ITSA4.png', 'rb')
+    bot.send_photo(message.chat.id, photo)
+    
 #####################################################
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    bot.process_new_updates([telebot.types.Update.de_json
+                         (request.stream.read().decode("utf-8"))])
     return "!", 200
 
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://app-ibovbot.herokuapp.com/'+TOKEN)
+    bot.set_webhook(url='https://YOUR-APP.herokuapp.com/'+TOKEN)
     return "!", 200
 
 
